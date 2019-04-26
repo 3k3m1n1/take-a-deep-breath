@@ -1,5 +1,5 @@
-/* Credit:
- * Original "Drop" function was posted by Dale R Basye
+/* rain.js credit:
+ * original "Drop" function was posted by Dale R Basye
  * on openprocessing.org :) I commented the code,
  * tweaked a few values (like the splashes) &
  * switched from mouse input to an Arduino sensor.
@@ -14,23 +14,24 @@ function Drop(x, y, sp) {
 
 
   this.displ = function() {
-    // converts mouse position
+    // converts photocell values
 
-    //var mx = mouseX / 120;
-    var mx = map(mouseX, 0, width, 0.5, 10.66, true);
-
-    y1 = y1 + (s * mx); // scales speed according to mouse position
+    y1 = y1 + (s * cellValue); // scales speed according to sensor value
     x2 = x1;
     y2 = y1 + 30; // length of raindrops, change if they're too long/short
 
-    stroke(200);
+    stroke(0, 0, 78.43);
     strokeWeight(1);
     line(x1, y1, x2, y2); // draws raindrop
 
     if (y1 >= windowHeight - random(80,120)) { // did the drop hit the ground?
 			noFill();
+      // HI UM HELLO why is that here? gonna try to take it out in a sec
+      //
+      //
+      //
       noStroke();
-      fill(255, 150);
+      fill(100, .59);
       ellipse(x1, windowHeight - random(5, 50), random(2, 5), random(1, 4)); // then draw a splash
 
 			// renews the drop by sending it back to the top (no need to generate new ones)
