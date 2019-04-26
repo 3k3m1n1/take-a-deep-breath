@@ -22,7 +22,7 @@ var rh; // right-hand ""
 var leftLowest, leftHighest;
 var rightLowest, rightHighest;
 var hueValue;
-var cellValue;
+var cellValue = .6; // default until i connect another sensor
 
 var a = 0.0; // the rate at which the circle changes
 var d = []; // array of raindrops
@@ -40,9 +40,15 @@ function setup() {
 	createCanvas(windowWidth, windowHeight);
 	colorMode(HSB, 360, 100, 100, 1);
 	background(0);
-	//smooth();
 
-	for (var i = 0; i < 500; i++) {
+	//default values
+	hueValue = 190;
+	leftLowest = 60;
+	rightLowest = 60;
+	leftHighest = 70;
+	rightHighest = 70;
+
+	for (var i = 0; i < 400; i++) {
 		// generate 500 raindrops at the start, these will be used throughout
     d.push(new Drop(random(0, windowWidth), random(0, windowHeight), random(2, 4)));
   }
@@ -59,7 +65,7 @@ function setup() {
 
 function draw() {
 	// fade effect: shade background with alpha bkgd
-	background(0, .1);
+	background(0, .2);
 
 	// update rain particles
 	for (var i = 0; i < d.length; i++) {
@@ -68,53 +74,58 @@ function draw() {
 
 	// draw circle cue: starts small, increases to max, then gets smaller
 	noFill();
-	stroke(hueValue, 100, 50, .39); // rgb(0, 213, 255, 100), hsb(189.88, 100, 50, .39)
+	stroke(hueValue, 100, 50, .39);
 	strokeWeight(12);
-	circle(windowWidth/2, windowHeight/2, -cos(a)*50+100);
-	a += 0.02; // slightly too fast, but leave it alone for now
+	circle(windowWidth/2, windowHeight/2, -cos(a + 20)*50+100);
+	a += 0.02015; // speed of circle animation
 }
 
-function lhUpdated(lhValue) {
+function lhUpdated(value) {
 	// left hand controls the chords volume + circle color.
 
 	// dynamically calculated range! thank you, James Hughes :) (jamezilla/p5bots)
   if (value < leftLowest) {
-    leftLowest = lhValue;
+    leftLowest = value;
   }
 
   if (value > leftHighest) {
-    leftHighest = lhValue;
+    leftHighest = value;
   }
 
-  hueValue = int(map(lhValue, leftLowest, leftHighest, 190, 270));
+  hueValue = map(value, leftLowest, leftHighest, 285, 190);
 	// won't cycle thru the entire color wheel -- only from aqua to violet
 
-	chords.setVolume(map(lhValue, leftLowest, leftHighest, 0, 4));
+	chords.setVolume(map(value, leftLowest, leftHighest, 4, 0), 0.2);
+	// darker -> louder
 }
 
-function rhUpdated(rhValue) {
+function rhUpdated(value) {
 	// right hand controls the rain volume and animation speed.
 
   if (value < rightLowest) {
-    rightLowest = rhValue;
+    rightLowest = value;
   }
 
   if (value > rightHighest) {
-    rightHighest = rhValue;
+    rightHighest = value;
   }
 
-	cellValue = map(rhValue, rightLowest, rightHighest, 0.5, 10.66);
-	// will be used to scale animation speed in rain.js
+	cellValue = map(value, rightLowest, rightHighest, 0.6, 8);
+	// will be used to scale animation speed in rain.js (brighter -> faster)
 
-	rain.setVolume(map(rhValue, rightLowest, rightHighest, 0, 0.7));
+	rain.setVolume(map(value, rightLowest, rightHighest, 0, 0.7), 0.2);
+	// brighter -> louder
+
+	print('value is ' + value);
+	print('speed is ' + cellValue);
 }
 
 function mouseClicked() {
 	// user interaction is required before autoplay, otherwise i wouldn't do this.
 	bkgd.setVolume(0.7);
 
-	// chords: max 4, min 0
-	// rain:  max .7, min 0
+	chords.setVolume(2);
+	rain.setVolume(0);
 
 	// start all audio at the sane time (even if vol = 0)
 	bkgd.loop();

@@ -31,7 +31,7 @@ function Drop(x, y, sp) {
       //
       //
       noStroke();
-      fill(100, .59);
+      fill(0, 0, 78.43); // or 100, .59
       ellipse(x1, windowHeight - random(5, 50), random(2, 5), random(1, 4)); // then draw a splash
 
 			// renews the drop by sending it back to the top (no need to generate new ones)
