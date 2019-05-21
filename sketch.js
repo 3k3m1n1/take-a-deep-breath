@@ -7,10 +7,10 @@
  * description: anxiety relief via generated raindrops, deep breathing
  *							cues, & relaxing audio controlled by the user.
  *
- * how to interact: connect an arduino uno with 2 infrared (distance)
- *									sensors. raise and lower your hand over the left
- *									one to change the volume of the chords & the color
- *									of the circle. do the same to the right-hand sensor
+ * how to interact: connect an arduino uno with 2 photoresistors (light
+ *									sensors). raise and lower your hand over the left
+ *									sensor to change the volume of the chords & the color
+ *									of the circle. do the same to the right sensor
  *									to change the volume and intensity of the rain.
  *									focus on the circle. breathe in. breathe out.
  */
@@ -28,6 +28,9 @@ var a = 0.0; // the rate at which the circle changes
 var d = []; // array of raindrops
 var bkgd, chords, rain;
 
+var rgb1, rgb2, c;
+var light = 21; // value of RGB LEDs in each pillar
+var up = true; // for counting up and down
 
 
 function preload() {
@@ -43,7 +46,7 @@ function setup() {
 
 	//default values
 	hueValue = 190;
-	leftLowest = 60;
+	leftLowest = 20;
 	rightLowest = 60;
 	leftHighest = 70;
 	rightHighest = 70;
@@ -61,10 +64,14 @@ function setup() {
 	rh = board.pin(1, 'ANALOG', 'INPUT');
   rh.read(rhUpdated); //runs each time the sensor value changes
 
+	rgb1 = board.pin({r: 9, g: 10, b: 11}, 'RGBLED');
+	rgb2 = board.pin({r: 3, g: 5, b: 6}, 'RGBLED');
+
 }
 
 function draw() {
 	// fade effect: shade background with alpha bkgd
+	colorMode(HSB, 360, 100, 100, 1);
 	background(0, .2);
 
 	// update rain particles
@@ -76,8 +83,25 @@ function draw() {
 	noFill();
 	stroke(hueValue, 100, 50, .39);
 	strokeWeight(12);
-	circle(windowWidth/2, windowHeight/2, -cos(a + 20)*50+100);
+	circle(windowWidth/2, windowHeight/2, -50*cos(a + 20)+100);
 	a += 0.02015; // speed of circle animation
+
+	// BONUS: pillars glow in sync with music!
+	colorMode(RGB);
+	if (up) {
+		light += 2;
+		if (light == 255) {
+			up = false;
+		}
+	} else {
+		light -= 2;
+		if (light == 21) {
+			up = true;
+		}
+	}
+	c = color(light, light, light);
+	rgb1.write(c);
+	rgb2.write(c);
 }
 
 function lhUpdated(value) {
@@ -92,11 +116,11 @@ function lhUpdated(value) {
     leftHighest = value;
   }
 
-  hueValue = map(value, leftLowest, leftHighest, 285, 190);
+  hueValue = map(value, leftLowest, leftHighest, 300, 180);
 	// won't cycle thru the entire color wheel -- only from aqua to violet
 
-	chords.setVolume(map(value, leftLowest, leftHighest, 4, 0), 0.2);
-	// darker -> louder
+	chords.setVolume(map(value, leftLowest, leftHighest, 0, 6), 0.2);
+	// brighter -> quieter
 }
 
 function rhUpdated(value) {
@@ -115,17 +139,12 @@ function rhUpdated(value) {
 
 	rain.setVolume(map(value, rightLowest, rightHighest, 0, 0.7), 0.2);
 	// brighter -> louder
-
-	print('value is ' + value);
-	print('speed is ' + cellValue);
 }
 
 function mouseClicked() {
 	// user interaction is required before autoplay, otherwise i wouldn't do this.
-	bkgd.setVolume(0.7);
-
-	chords.setVolume(2);
-	rain.setVolume(0);
+	bkgd.setVolume(1);
+	chords.setVolume(0);
 
 	// start all audio at the sane time (even if vol = 0)
 	bkgd.loop();

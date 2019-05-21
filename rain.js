@@ -25,11 +25,6 @@ function Drop(x, y, sp) {
     line(x1, y1, x2, y2); // draws raindrop
 
     if (y1 >= windowHeight - random(80,120)) { // did the drop hit the ground?
-			noFill();
-      // HI UM HELLO why is that here? gonna try to take it out in a sec
-      //
-      //
-      //
       noStroke();
       fill(0, 0, 78.43); // or 100, .59
       ellipse(x1, windowHeight - random(5, 50), random(2, 5), random(1, 4)); // then draw a splash
